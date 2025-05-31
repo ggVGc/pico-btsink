@@ -128,7 +128,6 @@ static int16_t *request_buffer;
 static int request_frames;
 
 // sink state
-static int volume_percentage = 0;
 static avrcp_battery_status_t battery_status = AVRCP_BATTERY_STATUS_WARNING;
 
 typedef struct {
@@ -284,7 +283,7 @@ static int setup_demo(void) {
   // - Set local name with a template Bluetooth address, that will be automatically
   //   replaced with an actual address once it is available, i.e. when BTstack boots
   //   up and starts talking to a Bluetooth module.
-  gap_set_local_name("instaBoi 00:00:00:00:00:00");
+  gap_set_local_name("yeooo 00:00:00:00:00:00");
 
   // - Allow to show up in Bluetooth inquiry
   gap_discoverable_control(1);
@@ -814,17 +813,17 @@ static void avrcp_target_packet_handler(uint8_t packet_type, uint16_t channel, u
   if (hci_event_packet_get_type(packet) != HCI_EVENT_AVRCP_META)
     return;
 
-  uint8_t volume;
   char const *button_state;
   avrcp_operation_id_t operation_id;
 
   switch (packet[2]) {
-  case AVRCP_SUBEVENT_NOTIFICATION_VOLUME_CHANGED:
-    volume = avrcp_subevent_notification_volume_changed_get_absolute_volume(packet);
-    volume_percentage = volume * 100 / 127;
+  case AVRCP_SUBEVENT_NOTIFICATION_VOLUME_CHANGED: {
+    const uint8_t volume = avrcp_subevent_notification_volume_changed_get_absolute_volume(packet);
+    const int volume_percentage = volume * 100 / 127;
     printf("AVRCP Target    : Volume set to %d%% (%d)\n", volume_percentage, volume);
     avrcp_volume_changed(volume);
-    break;
+
+  } break;
 
   case AVRCP_SUBEVENT_OPERATION:
     operation_id = (avrcp_operation_id_t)avrcp_subevent_operation_get_operation_id(packet);

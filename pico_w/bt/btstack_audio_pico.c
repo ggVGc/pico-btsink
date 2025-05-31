@@ -35,6 +35,7 @@
  *
  */
 
+#include <stdio.h>
 #define BTSTACK_FILE__ "btstack_audio_pico.c"
 
 /*
@@ -55,6 +56,8 @@
 
 #include "pico/audio_i2s.h"
 
+// #include <arm_acle.h>
+
 #define DRIVER_POLL_INTERVAL_MS          5
 #define SAMPLES_PER_BUFFER 512
 
@@ -66,6 +69,7 @@ static btstack_timer_source_t  driver_timer_sink;
 
 
 static bool btstack_audio_pico_sink_active;
+static uint8_t current_volume = 127;
 
 // from pico-playground/audio/sine_wave/sine_wave.c
 
@@ -109,6 +113,14 @@ static audio_buffer_pool_t *init_audio(uint32_t sample_frequency, uint8_t channe
     return producer_pool;
 }
 
+/*
+static inline int16_t signed_saturate_rshift16(const int32_t val, const int32_t rshift)
+    __attribute__((always_inline, unused));
+static inline int16_t signed_saturate_rshift16(const int32_t val, const int32_t rshift) {
+  return __ssat(val >> rshift, 16);
+}
+*/
+
 static void btstack_audio_pico_sink_fill_buffers(void){
     while (true){
         audio_buffer_t * audio_buffer = take_audio_buffer(btstack_audio_pico_audio_buffer_pool, false);
@@ -118,6 +130,15 @@ static void btstack_audio_pico_sink_fill_buffers(void){
 
         int16_t * buffer16 = (int16_t *) audio_buffer->buffer->bytes;
         (*playback_callback)(buffer16, audio_buffer->max_sample_count);
+
+        int16_t i;
+        for (i = SAMPLES_PER_BUFFER * 2 - 1 ; i >= 0; i--){
+          const int32_t value =
+              (((int32_t)(buffer16[i]) * current_volume) >> 8);
+
+          // buffer16[i] = signed_saturate_rshift16(value, 0);
+          buffer16[i] = value;
+        }
 
         // duplicate samples for mono
         if (btstack_audio_pico_channel_count == 1){
@@ -159,8 +180,9 @@ static int btstack_audio_pico_sink_init(
     return 0;
 }
 
-static void btstack_audio_pico_sink_set_volume(uint8_t volume){
-    UNUSED(volume);
+static void btstack_audio_pico_sink_set_volume(const uint8_t volume){
+    current_volume = volume;
+    printf("New volume: %i\n", current_volume);
 }
 
 static void btstack_audio_pico_sink_start_stream(void){
