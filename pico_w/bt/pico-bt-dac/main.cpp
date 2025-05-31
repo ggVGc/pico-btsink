@@ -283,7 +283,7 @@ static int setup_demo(void) {
   // - Set local name with a template Bluetooth address, that will be automatically
   //   replaced with an actual address once it is available, i.e. when BTstack boots
   //   up and starts talking to a Bluetooth module.
-  gap_set_local_name("yeooo 00:00:00:00:00:00");
+  gap_set_local_name("instaBoi 00:00:00:00:00:00");
 
   // - Allow to show up in Bluetooth inquiry
   gap_discoverable_control(1);
