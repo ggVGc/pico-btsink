@@ -35,8 +35,6 @@
  *
  */
 
-#define BTSTACK_FILE__ "a2dp_sink_demo.c"
-
 /*
  * a2dp_sink_demo.c
  */
@@ -73,7 +71,6 @@
 #include "btstack_resample.h"
 
 // #define AVRCP_BROWSING_ENABLED
-
 
 #ifdef HAVE_BTSTACK_AUDIO_EFFECTIVE_SAMPLERATE
 #include "btstack_sample_rate_compensation.h"
@@ -435,7 +432,6 @@ static void media_processing_close(void) {
   l2cap_stream_started = 0;
 #endif
 
-
   // stop audio playback
   const btstack_audio_sink_t *audio = btstack_audio_sink_get_instance();
   if (audio) {
@@ -627,7 +623,6 @@ static void avrcp_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t 
     connection->avrcp_cid = local_cid;
     avrcp_subevent_connection_established_get_bd_addr(packet, address);
     printf("AVRCP: Connected to %s, cid 0x%02x\n", bd_addr_to_str(address), connection->avrcp_cid);
-
 
     avrcp_target_support_event(connection->avrcp_cid, AVRCP_NOTIFICATION_EVENT_VOLUME_CHANGED);
     avrcp_target_support_event(connection->avrcp_cid, AVRCP_NOTIFICATION_EVENT_BATT_STATUS_CHANGED);
