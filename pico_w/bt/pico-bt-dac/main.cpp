@@ -915,7 +915,7 @@ static void avrcp_controller_packet_handler(uint8_t packet_type, uint16_t channe
   case AVRCP_SUBEVENT_NOTIFICATION_STATE:
     event_id =
         (avrcp_notification_event_id_t)avrcp_subevent_notification_state_get_event_id(packet);
-    printf("AVRCP Controller: %s notification registered\n", avrcp_notification2str(event_id));
+    printf("AVRCP Controller: %s notification registered\n", avrcp_notification2str((avrcp_notification_event_id_t)event_id));
     break;
 
   case AVRCP_SUBEVENT_NOTIFICATION_PLAYBACK_POS_CHANGED:
@@ -1486,8 +1486,7 @@ static void stdin_process(char cmd) {
 }
 #endif
 
-int btstack_main(int argc, const char *argv[]);
-int btstack_main(int argc, const char *argv[]) {
+extern "C" int btstack_main(int argc, const char *argv[]) {
   UNUSED(argc);
   (void)argv;
 
