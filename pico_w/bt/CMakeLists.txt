@@ -219,10 +219,6 @@ endif()
 function(picow_bt_example_common NAME)
         if (NOT TARGET picow_bt_example_common_${NAME})
                 add_library(picow_bt_example_common_${NAME} INTERFACE)
-                target_sources(picow_bt_example_common_${NAME} INTERFACE
-                        # actual example
-                        ${BTSTACK_EXAMPLE_PATH}/${NAME}.c
-                        )
                 if (EXISTS "${BTSTACK_EXAMPLE_PATH}/${NAME}.gatt")
                         pico_btstack_make_gatt_header(picow_bt_example_common_${NAME} INTERFACE ${BTSTACK_EXAMPLE_PATH}/${NAME}.gatt)
                 endif()
@@ -241,21 +237,6 @@ if ((NOT BTSTACK_EXAMPLE_TYPE STREQUAL "poll") AND
 endif()
 set(BTSTACK_EXAMPLE_TYPE "${BTSTACK_EXAMPLE_TYPE}" CACHE INTERNAL "BT stack example type (poll|background|freertos|all)")
 
-# Add an poll example, pass btstack example name, target name, variant lib and extra libs
-function(picow_bt_example_poll NAME TARGET_NAME VARIANT_LIB)
-        if ("${BTSTACK_EXAMPLE_TYPE}" STREQUAL "poll" OR "${BTSTACK_EXAMPLE_TYPE}" STREQUAL "all")
-                picow_bt_example_common(${NAME})
-                add_executable(${TARGET_NAME}_poll)
-                target_link_libraries(${TARGET_NAME}_poll PRIVATE
-                        picow_bt_example_common_${NAME}
-                        ${VARIANT_LIB}
-                        ${ARGN} # extra libs
-                        )
-                pico_add_extra_outputs(${TARGET_NAME}_poll)
-                example_auto_set_url(${TARGET_NAME}_poll)
-        endif()
-endfunction()
-
 # Add an background example, pass btstack example name, target name, variant lib and extra libs
 function(picow_bt_example_background NAME TARGET_NAME VARIANT_LIB)
         if ("${BTSTACK_EXAMPLE_TYPE}" STREQUAL "background" OR "${BTSTACK_EXAMPLE_TYPE}" STREQUAL "all")
@@ -271,58 +252,14 @@ function(picow_bt_example_background NAME TARGET_NAME VARIANT_LIB)
         endif()
 endfunction()
 
-# Add a freertos example, pass btstack example name, target name, variant lib and extra libs
-function(picow_bt_example_freertos NAME TARGET_NAME VARIANT_LIB)
-        if ("${BTSTACK_EXAMPLE_TYPE}" STREQUAL "freertos" OR "${BTSTACK_EXAMPLE_TYPE}" STREQUAL "all")
-                if (TARGET FreeRTOS-Kernel)
-                        picow_bt_example_common(${NAME})
-                        add_executable(${TARGET_NAME}_freertos)
-                        target_link_libraries(${TARGET_NAME}_freertos PRIVATE
-                                picow_bt_example_common_${NAME}
-                                ${VARIANT_LIB}
-                                ${ARGN} # extra libs
-                                )
-                        pico_add_extra_outputs(${TARGET_NAME}_freertos)
-                        example_auto_set_url(${TARGET_NAME}_freertos)
-                endif()
-        endif()
-endfunction()
-
 # The default name of the bt example target
 function(picow_bt_example_target_name NAME RET)
         SET(${RET} "picow_bt_example_${NAME}" PARENT_SCOPE)
 endfunction()
 
-# Make a btstack example, NAME should match source file in lib/btstack/example
-# Extra parameters indicate extra libraries to link to
-function(picow_bt_example NAME)
-        picow_bt_example_target_name(${NAME} TARGET_NAME)
-        picow_bt_example_poll(${NAME} ${TARGET_NAME} picow_bt_example_no_cyw43_lwip_poll pico_btstack_ble pico_btstack_classic ${ARGN})
-        picow_bt_example_background(${NAME} ${TARGET_NAME} picow_bt_example_no_cyw43_lwip_background pico_btstack_ble pico_btstack_classic ${ARGN})
-        picow_bt_example_freertos(${NAME} ${TARGET_NAME} picow_bt_example_no_cyw43_lwip_freertos pico_btstack_ble pico_btstack_classic ${ARGN})
-endfunction()
-
 # List of examples from btstack
 include(${BTSTACK_ROOT}/example/CMakeLists.txt)
 
-# Full list of bluetooth examples
-set(BTSTACK_EXAMPLES
-        ${EXAMPLES_GENERAL}
-        ${EXAMPLES_CLASSIC_ONLY}
-        ${EXAMPLES_LE_ONLY}
-        ${EXAMPLES_DUAL_MODE}
-        pan_lwip_http_server
-)
-
-# These examples run wifi and bt at the same time
-if (WIFI_SSID AND WIFI_PASSWORD)
-        list(APPEND BTSTACK_EXAMPLES
-                gatt_counter_with_wifi
-                gatt_streamer_server_with_wifi
-                #spp_streamer_with_wifi
-        )
-endif()
-
-add_subdirectory_exclude_platforms(a2dp_sink_demo)
+add_subdirectory_exclude_platforms(pico-bt-dac)
 
 suppress_btstack_warnings()
